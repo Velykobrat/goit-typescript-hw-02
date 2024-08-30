@@ -19,6 +19,12 @@ interface Image {
   height: number;
 }
 
+interface ApiResponse {
+  total: number;
+  total_pages: number;
+  results: Image[];
+}
+
 const App: React.FC = () => {
   const [images, setImages] = useState<Image[]>([]);
   const [query, setQuery] = useState<string>('');
@@ -31,17 +37,20 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!query) return;
 
-    const fetchImages = async () => {
-      setIsLoading(true);
-      try {
-        const response = await axios.get(`https://api.unsplash.com/search/photos?page=${page}&query=${query}&client_id=BalC9pYc4FBrCsIKEVlYs4A4XHBdSRUlwmaFEmdpm9I`);
-        setImages((prevImages) => [...prevImages, ...response.data.results]);
-      } catch (error: any) {
-        setError(error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+const fetchImages = async () => {
+  setIsLoading(true);
+  try {
+    const response = await axios.get<ApiResponse>(
+      `https://api.unsplash.com/search/photos?page=${page}&query=${query}&client_id=BalC9pYc4FBrCsIKEVlYs4A4XHBdSRUlwmaFEmdpm9I`
+    );
+    setImages((prevImages) => [...prevImages, ...response.data.results]);
+  } catch (error) {
+    setError((error as Error).message);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
     fetchImages();
   }, [query, page]);
